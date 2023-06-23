@@ -5,8 +5,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from logconfig.logger import get_logger
 from .models import Event
 from .serializers import EventSerializer
+# Logger configuration
+logger = get_logger()
 
 
 class UserEventListAPIView(APIView):
@@ -22,6 +25,7 @@ class UserEventListAPIView(APIView):
             return Response({'message': 'Event data retrieved successfully', 'data': serializer.data, 'status': 200},
                             status=status.HTTP_200_OK)
         except Exception as e:
+            logger.exception(e)
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -78,11 +82,15 @@ class UserTicketAPIView(APIView):
        """
 
     def get(self, request):
-        user = request.user
-        tickets = Ticket.objects.filter(user=user)
-        serializer = self.serializer_class(tickets, many=True)
-        return Response({'message': 'Tickets retrieved successfully', 'data': serializer.data, 'status': 200},
-                        status=status.HTTP_200_OK)
+        try:
+            user = request.user
+            tickets = Ticket.objects.filter(user=user)
+            serializer = self.serializer_class(tickets, many=True)
+            return Response({'message': 'Tickets retrieved successfully', 'data': serializer.data, 'status': 200},
+                            status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception(e)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminEventCreateAPIView(APIView):
@@ -103,7 +111,8 @@ class AdminEventCreateAPIView(APIView):
             return Response({'message': 'event created successfully', 'data': serializer.data, 'status': 201},
                             status=201)
         except Exception as e:
-            return Response({'message': str(e)}, status=400)
+            logger.exception(e)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminEventListAPIView(APIView):
@@ -114,10 +123,14 @@ class AdminEventListAPIView(APIView):
        """
 
     def get(self, request):
-        events = Event.objects.all()
-        serializer = self.serializer_class(events, many=True)
-        return Response({'message': 'Event data retrieved successfully', 'data': serializer.data, 'status': 200},
-                        status=status.HTTP_200_OK)
+        try:
+            events = Event.objects.all()
+            serializer = self.serializer_class(events, many=True)
+            return Response({'message': 'Event data retrieved successfully', 'data': serializer.data, 'status': 200},
+                            status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception(e)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminEventUpdateAPIView(APIView):
@@ -136,7 +149,7 @@ class AdminEventUpdateAPIView(APIView):
             return Response({"message": "event Updated Successfully", "status": 200, "data": serializer.data},
                             status=200)
         except Exception as e:
-            # logger.exception(e)
+            logger.exception(e)
             return Response({"message": str(e), "status": 400, "data": {}}, status=400)
 
 
