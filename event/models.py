@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+
 from user.models import User
 
 
@@ -18,6 +20,10 @@ class Event(models.Model):
     booking_open_window_start = models.DateTimeField()
     booking_open_window_end = models.DateTimeField()
 
+    def is_booking_open(self):
+        now = timezone.now()
+        return self.booking_open_window_start <= now <= self.booking_open_window_end
+
     def get_total_tickets_sold(self):
         return self.tickets.count()
 
@@ -32,21 +38,7 @@ class Event(models.Model):
 
 
 class Ticket(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='tickets')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     booking_date = models.DateTimeField(auto_now_add=True)
-    #
-    # def __str__(self):
-    #     return f"Ticket #{self.id} - {self.event.title}"#
-# class EventSummary(models.Model):
-#     event = models.OneToOneField(Event, on_delete=models.CASCADE)
-#     total_tickets_sold = models.PositiveIntegerField(default=0)
-#     remaining_seats = models.PositiveIntegerField(default=0)
-#
-#     def update_summary(self):
-#         self.total_tickets_sold = self.event.ticket_set.count()
-#         self.remaining_seats = self.event.max_seats - self.total_tickets_sold
-#         self.save()
-#
-#     def __str__(self):
-#         return f"Summary for {self.event.title}"
+

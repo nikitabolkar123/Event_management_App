@@ -1,8 +1,6 @@
 from django.contrib.auth import login, logout
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-# from user.jwt_util import JWT
 from user.models import User
 from user.serializers import RegistrationSerializer, LoginSerializer
 
