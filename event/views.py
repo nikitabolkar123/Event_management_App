@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from logconfig.logger import get_logger
 from .models import Event
-from .serializers import EventSerializer
+
 # Logger configuration
 logger = get_logger()
 
@@ -32,16 +32,23 @@ class UserEventListAPIView(APIView):
 class UserEventDetailAPIView(APIView):
     serializer_class = EventSerializer
     """
-          class is used for the user event details
+            class is used for the user event details
        """
 
-    def get(self, request, event_id):
+    def get_event(self, event_id):  # helper method
         try:
             event = Event.objects.get(id=event_id)
-            serializer = EventSerializer(event)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return event
         except Event.DoesNotExist:
+            return None
+
+    def get(self, request, event_id):
+        event = self.get_event(event_id)
+        if event is None:
             return Response({'message': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(event)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserEventBookingAPIView(APIView):
@@ -67,7 +74,7 @@ class UserEventBookingAPIView(APIView):
 
         if event.get_remaining_seats() <= 0:
             return Response({'message': 'Ticket limit exceeded'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # if all the conditions pass... the new Ticket object is created
         ticket = Ticket.objects.create(event=event, user=user)
         serializer = self.serializer_class(ticket)
         return Response({'message': 'Ticket booked successfully', 'data': serializer.data},
@@ -99,10 +106,9 @@ class AdminEventCreateAPIView(APIView):
     """
           class is used for the Admin crud
        """
-
     def post(self, request):
-        if not request.user.is_superuser:
-            return Response({'message': 'You do not have permission to create a new event'}, status=403)
+        # if not request.user.is_superuser:
+        #     return Response({'message': 'You do not have permission to create a new event'}, status=403)
         try:
             request.data.update({'user': request.user.id})
             serializer = EventSerializer(data=request.data)
@@ -139,6 +145,7 @@ class AdminEventUpdateAPIView(APIView):
     """
           class is used for the Admin to update event data
        """
+
     def put(self, request, event_id):
         try:
             request.data.update({'user': request.user.id})  #

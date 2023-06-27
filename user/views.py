@@ -1,8 +1,10 @@
 from django.contrib.auth import login, logout
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from logconfig.logger import get_logger
 from user.models import User
 from user.serializers import RegistrationSerializer, LoginSerializer
+logger = get_logger()
 
 
 # Create your views here.
@@ -24,7 +26,7 @@ class UserRegistration(APIView):
             return Response({"message": "User Registration Successfully", "status": 201, "data": serializer.data},
                             status=201)
         except Exception as e:
-            # logger.exception(e)
+            logger.exception(e)
             return Response({"message": str(e), "status": 400, "data": {}}, status=400)
 
     def get(self, request):
@@ -37,7 +39,7 @@ class UserRegistration(APIView):
             return Response({"message": "Retrieve Data  Successfully", "status": 200, "data": serializer.data},
                             status=200)
         except Exception as e:
-            # logger.exception(e)
+            logger.exception(e)
             return Response({"message": str(e), "status": 400, "data": {}}, status=400)
 
 
@@ -58,7 +60,7 @@ class UserLogin(APIView):
             login(request, serializer.context.get('user'))
             return Response({"message": "Login Successful", "status": 201, "data": {}}, status=201)
         except Exception as e:
-            # logger.exception(e)
+            logger.exception(e)
             return Response({"message": str(e), "status": 400, "data": {}}, status=400)
 
 
@@ -71,4 +73,6 @@ class Logout(APIView):
             else:
                 return Response({"Message": "you are not log in"})
         except Exception as e:
-            return Response({"Message": "An error occurred during logout:{}".format(str(e))})
+            logger.exception(e)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

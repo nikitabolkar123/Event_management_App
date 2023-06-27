@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-
 from user.models import User
 
 
@@ -20,7 +19,7 @@ class Event(models.Model):
     booking_open_window_start = models.DateTimeField()
     booking_open_window_end = models.DateTimeField()
 
-    def is_booking_open(self):
+    def is_booking_open(self): #booking window for that particular event is open or closed at the current time.
         now = timezone.now()
         return self.booking_open_window_start <= now <= self.booking_open_window_end
 
